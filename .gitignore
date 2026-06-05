@@ -1,0 +1,16 @@
+# PlatformIO
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# IDE
+.vscode/
+.idea/
+compile_commands.json
+
+# Secrets — Wi-Fi / MQTT credentials, filled per build by the user
+src/secrets.h
+
+# OS
+.DS_Store
+Thumbs.db

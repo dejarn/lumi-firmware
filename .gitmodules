@@ -1,0 +1,4 @@
+[submodule "lib/lumi-protocol"]
+	path = lib/lumi-protocol
+	url = https://github.com/dejarn/lumi-protocol.git
+	branch = main

@@ -6,6 +6,7 @@
 # IDE
 .vscode/
 .idea/
+.cache/
 compile_commands.json
 
 # Secrets — Wi-Fi / MQTT credentials, filled per build by the user

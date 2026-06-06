@@ -137,7 +137,7 @@ The firmware does **not** build or publish ACK / STATE_REPORT — the library do
 |---|---|
 | Build system | PlatformIO |
 | Board / framework | `esp32dev` / Arduino |
-| Libraries | FastLED (`lib_deps`); `LumiProtocol` via `lib_extra_dirs = lib/lumi-protocol/device` (git submodule). PubSubClient pulled in transitively as a `LumiProtocol` dependency. |
+| Libraries | FastLED (`lib_deps`); `LumiProtocol` via `lib_extra_dirs = vendor/lumi-protocol/device/arduino` (git submodule). PubSubClient pulled in transitively as a `LumiProtocol` dependency. |
 | Secrets | `src/secrets.h` (gitignored) — WIFI_SSID, WIFI_PASSWORD, MQTT_HOST, MQTT_PORT |
 
 Flashing and wiring: see [flashing.md](flashing.md).

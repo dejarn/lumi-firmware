@@ -7,7 +7,7 @@ How to build lumi-firmware and flash it onto a board. Reference hardware: a gene
 ## Prerequisites
 
 - [PlatformIO Core](https://platformio.org/) (`pio`) installed.
-- The lumi-protocol submodule populated under `lib/lumi-protocol`. If empty: `git submodule update --init --recursive`. The `LumiProtocol` library is exposed to the build via `lib_extra_dirs = lib/lumi-protocol/device` in `platformio.ini`.
+- The lumi-protocol submodule populated under `vendor/lumi-protocol`. If empty: `git submodule update --init --recursive`. The `LumiProtocol` library is exposed to the build via `lib_extra_dirs = vendor/lumi-protocol/device/arduino` in `platformio.ini`.
 - `src/secrets.h` present (gitignored). Create it with your Wi-Fi + MQTT values:
   ```cpp
   #pragma once
@@ -60,14 +60,14 @@ pio run -t upload
 
 ## Submodule version
 
-Pin the `lib/lumi-protocol` submodule to the **same git tag as the mqtt-bridge** (e.g. `v1.0.0`), not a moving branch. Bridge and firmware must agree on the protocol version. To pin:
+Pin the `vendor/lumi-protocol` submodule to the **same git tag as the mqtt-bridge** (e.g. `v1.0.0`), not a moving branch. Bridge and firmware must agree on the protocol version. To pin:
 
 ```
-cd lib/lumi-protocol
+cd vendor/lumi-protocol
 git fetch --tags
 git checkout v1.0.0
 cd ../..
-git add lib/lumi-protocol
+git add vendor/lumi-protocol
 ```
 
 ## Common commands

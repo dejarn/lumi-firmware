@@ -57,7 +57,7 @@ There is **no** `mqtt` or `protocol` module — `LumiProtocol` replaces both. `l
 3. Load NUM_LEDS + DATA_PIN from NVS.
 4. `ledInit(numLeds, dataPin)` — allocate the CRGB buffer, register FastLED on the provisioned GPIO.
 5. Derive `deviceName` from the Wi-Fi MAC (e.g. `lumi-a3f1`).
-6. Connect: loop `lumi.begin(WIFI_SSID, WIFI_PASS, MQTT_HOST, deviceName)` with backoff until it returns true (see Resilience).
+6. Connect: loop `lumi.begin(WIFI_SSID, WIFI_PASS, MQTT_HOST, deviceName, MQTT_PORT, MQTT_USER, MQTT_PASSWORD)` with backoff until it returns true (see Resilience).
 7. Wire callbacks (`onSetPower`, `onSetBrightness`, `onSetColor`, `onSetAnimation`, `onStopAnimation`, `onGetState`) to `led`.
 
 ## Loop (`loop()`)
@@ -138,6 +138,6 @@ The firmware does **not** build or publish ACK / STATE_REPORT — the library do
 | Build system | PlatformIO |
 | Board / framework | `esp32dev` / Arduino |
 | Libraries | FastLED (`lib_deps`); `LumiProtocol` via `lib_extra_dirs = vendor/lumi-protocol/device/arduino` (git submodule). PubSubClient pulled in transitively as a `LumiProtocol` dependency. |
-| Secrets | `src/secrets.h` (gitignored) — WIFI_SSID, WIFI_PASSWORD, MQTT_HOST, MQTT_PORT |
+| Secrets | `src/secrets.h` (gitignored) — WIFI_SSID, WIFI_PASSWORD, MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD |
 
 Flashing and wiring: see [flashing.md](flashing.md).

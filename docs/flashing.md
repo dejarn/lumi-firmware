@@ -15,6 +15,8 @@ How to build lumi-firmware and flash it onto a board. Reference hardware: a gene
   #define WIFI_PASSWORD "your-password"
   #define MQTT_HOST     "192.168.1.10"
   #define MQTT_PORT     1883
+  #define MQTT_USER     "lumi"
+  #define MQTT_PASSWORD "your-mqtt-password"
   ```
 
 ## Build

@@ -55,7 +55,8 @@ void setup() {
   //    5 s reconnect loop does not cover this pre-begin() case, so retry here.
   uint32_t backoffMs = 1000;                 // start at 1 s
   const uint32_t backoffCeilMs = 30000;      // cap at 30 s
-  while (!lumi.begin(WIFI_SSID, WIFI_PASSWORD, MQTT_HOST, deviceName, MQTT_PORT)) {
+  while (!lumi.begin(WIFI_SSID, WIFI_PASSWORD, MQTT_HOST, deviceName, MQTT_PORT,
+                     MQTT_USER, MQTT_PASSWORD)) {
     Serial.print(F("[main] connect failed — retrying in "));
     Serial.print(backoffMs / 1000);
     Serial.println(F(" s"));

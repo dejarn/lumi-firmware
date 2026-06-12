@@ -153,5 +153,5 @@ After each state-changing command the library emits ACK + STATE_REPORT, calling 
 
 ## Related
 
-- [lumi](https://github.com/dejarn/lumi) — the self-hosted platform (UI, automations, device registry)
-- [lumi-protocol](https://github.com/dejarn/lumi-protocol) — the binary MQTT protocol + `LumiProtocol` device library
+- [lumi](https://github.com/dejarn/lumi) — the self-hosted platform (Next.js UI, automations, mqtt-bridge)
+- [lumi-protocol](https://github.com/dejarn/lumi-protocol) — the binary MQTT protocol + Node.js/Arduino libraries

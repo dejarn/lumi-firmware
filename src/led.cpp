@@ -98,7 +98,8 @@ void renderRainbow(uint8_t level) {
 // ── Public API ───────────────────────────────────────────────────────────────
 
 bool init(uint32_t numLeds, uint8_t dataPin) {
-  if (numLeds == 0) return false;
+  constexpr uint32_t kMaxLeds = 1000;  // defence-in-depth; must stay aligned with ledconfig
+  if (numLeds == 0 || numLeds > kMaxLeds) return false;
 
   buffer.assign(numLeds, CRGB::Black);   // single allocation
   count = numLeds;

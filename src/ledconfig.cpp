@@ -55,7 +55,7 @@ bool load(Config& out) {
 
   prefs.end();
 
-  if (cfg.numLeds == 0 || !isSupportedPin(cfg.dataPin)) {
+  if (!isValidConfig(cfg)) {
     return false;
   }
 

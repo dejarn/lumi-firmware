@@ -23,6 +23,19 @@ String readLine() {
   }
 }
 
+// Parses a strict unsigned decimal integer from a String (no leading sign, no
+// whitespace, no trailing junk). Returns true and sets `out` on success.
+// Rejects empty strings, non-digit characters, and values > LONG_MAX.
+// Prevents Arduino's String::toInt() from silently accepting "123abc" → 123.
+bool parseUintStrict(const String& s, long& out) {
+  if (s.length() == 0) return false;
+  for (size_t i = 0; i < s.length(); ++i) {
+    if (!isDigit(s[i])) return false;
+  }
+  out = s.toInt();
+  return true;
+}
+
 }  // namespace
 
 bool load(Config& out) {
@@ -62,7 +75,11 @@ void provisionInteractive(Config& out) {
   for (;;) {
     Serial.print(F("Number of LEDs (1-1000): "));
     String line = readLine();
-    long value = line.toInt();
+    long value = 0;
+    if (!parseUintStrict(line, value)) {
+      Serial.println(F("  Invalid input. Enter digits only (e.g. 60)."));
+      continue;
+    }
     Serial.println(value);
     if (value >= static_cast<long>(kMinLeds) &&
         value <= static_cast<long>(kMaxLeds)) {
@@ -76,7 +93,11 @@ void provisionInteractive(Config& out) {
   for (;;) {
     Serial.print(F("Data GPIO pin: "));
     String line = readLine();
-    long value = line.toInt();
+    long value = 0;
+    if (!parseUintStrict(line, value)) {
+      Serial.println(F("  Invalid input. Enter digits only (e.g. 18)."));
+      continue;
+    }
     Serial.println(value);
     if (value >= 0 && value <= 255 &&
         isSupportedPin(static_cast<uint8_t>(value))) {

@@ -126,7 +126,7 @@ The firmware sees only callbacks; the library does the rest:
 | `onSetBrightness` | `void(uint8_t brightness)` | FastLED master brightness |
 | `onSetColor` | `void(uint16_t h, uint8_t s, uint8_t b)` | HSB→RGB, solid fill |
 | `onSetAnimation` | `void(uint8_t animId, uint8_t speed, uint8_t intensity)` | start animation |
-| `onStopAnimation` | `void()` | stop, hold current frame |
+| `onStopAnimation` | `void()` | stop animation; re-render solid base color (avoids freezing on a flash/strobe blackout frame) |
 | `onGetState` | `LumiState()` | return current `{power, brightness, h, s, colorBri, animId}` |
 
 After each state-changing command the library emits ACK + STATE_REPORT, calling `onGetState()`. Animations (pulse, breathe, flash, strobe, rainbow) render locally via `millis()` deltas.

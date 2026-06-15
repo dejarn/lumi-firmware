@@ -97,7 +97,7 @@ The firmware does **not** build or publish ACK / STATE_REPORT — the library do
 | `onSetBrightness` | `void(uint8_t brightness)` | FastLED master brightness |
 | `onSetColor` | `void(uint16_t h, uint8_t s, uint8_t b)` | HSB→RGB, solid fill |
 | `onSetAnimation` | `void(uint8_t animId, uint8_t speed, uint8_t intensity)` | start animation |
-| `onStopAnimation` | `void()` | stop, hold current frame |
+| `onStopAnimation` | `void()` | stop animation; re-render solid base color (avoids freezing on a flash/strobe blackout frame) |
 | `onGetState` | `LumiState()` | return current `{power, brightness, h, s, colorBri, animId}` |
 
 ## State tracking
@@ -158,7 +158,11 @@ This "stall" is a known limitation of the current synchronous reconnect implemen
 |---|---|
 | Build system | PlatformIO |
 | Board / framework | `esp32dev` / Arduino |
-| Libraries | FastLED (`lib_deps`); `LumiProtocol` via `lib_extra_dirs = vendor/lumi-protocol/device/arduino` (git submodule). PubSubClient pulled in transitively as a `LumiProtocol` dependency. |
+| Libraries | FastLED + PubSubClient (`lib_deps`, pinned); `LumiProtocol` via `lib_extra_dirs = vendor/lumi-protocol/device/arduino` (git submodule). PubSubClient is listed explicitly in `lib_deps` because the LDF does not resolve transitive dependencies under `lib_extra_dirs`. |
 | Secrets | `src/secrets.h` (gitignored) — WIFI_SSID, WIFI_PASSWORD, MQTT_HOST, MQTT_PORT, MQTT_USER, MQTT_PASSWORD |
 
 Flashing and wiring: see [flashing.md](flashing.md).
+
+## Partition scheme
+
+**No OTA in v1.** The firmware uses the ESP32 default partition table (`default.csv`: single app partition + NVS + SPIFFS). OTA (`default_ota.csv`) would halve the available app flash per slot, and USB flashing is acceptable for a small controlled fleet. Switching to an OTA partition table requires a full flash erase (re-provisioning). If OTA becomes a requirement, the decision should be made before a fleet grows — the migration cost scales with device count. Document the choice here when made.

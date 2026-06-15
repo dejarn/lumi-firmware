@@ -64,6 +64,7 @@ void setup() {
   // 5. Connect via the library with capped exponential backoff. begin() blocks
   //    up to ~30 s for Wi-Fi and returns false on timeout; the library's own
   //    5 s reconnect loop does not cover this pre-begin() case, so retry here.
+  //    Between retries we use delay() — acceptable in setup(), not in loop().
   uint32_t backoffMs = 1000;                 // start at 1 s
   const uint32_t backoffCeilMs = 30000;      // cap at 30 s
   while (!lumi.begin(WIFI_SSID, WIFI_PASSWORD, MQTT_HOST, deviceName, MQTT_PORT,
@@ -71,10 +72,9 @@ void setup() {
     Serial.print(F("[main] connect failed — retrying in "));
     Serial.print(backoffMs / 1000);
     Serial.println(F(" s"));
-    uint32_t start = millis();
-    while (millis() - start < backoffMs) {
-      yield();
-    }
+    // delay() is safe here: we are still in setup(), not in the cooperative
+    // loop(), so stalling is acceptable and avoids a spinning yield() call.
+    delay(backoffMs);
     if (backoffMs < backoffCeilMs) {
       backoffMs *= 2;
       if (backoffMs > backoffCeilMs) backoffMs = backoffCeilMs;

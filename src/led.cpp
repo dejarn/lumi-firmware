@@ -122,6 +122,10 @@ bool init(uint32_t numLeds, uint8_t dataPin) {
   }
 
   FastLED.setBrightness(state.brightness);
+  // Safety: cap total draw at 5 V / 2 000 mA (10 W). FastLED scales brightness
+  // globally when the calculated draw would exceed this budget.
+  // 1 000 WS2812B at full white ≈ 60 W without a cap — a PSU / fire hazard.
+  FastLED.setMaxPowerInVoltsAndMilliamps(5, 2000);
   ready = true;
   lastFrameMs = millis();
   return true;
@@ -193,8 +197,13 @@ void tick() {
     default: return;
   }
 
-  // If power is off, hold the animation phase (above) but do not light LEDs.
-  present();
+  // If power is off, advance the animation phase (above) but skip the RMT
+  // push — pushing an all-black frame every 10 ms wastes RMT bandwidth.
+  // present() already handles the blackout; it is called on power transitions
+  // via setPower(), so the strip stays dark without redundant DMA writes here.
+  if (state.power) {
+    present();
+  }
 }
 
 }  // namespace led

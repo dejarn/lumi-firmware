@@ -131,6 +131,27 @@ The firmware does **not** build or publish ACK / STATE_REPORT — the library do
 - **Initial connection failure:** `lumi.begin()` blocks up to 30 s for Wi-Fi and returns `false` on timeout. The library's reconnect loop does *not* cover this pre-`begin()` case, so the firmware re-calls `begin()` with backoff until it succeeds. No reboot.
 - **Provisioning is sticky:** LED config lives in NVS `lumi-led`; a reboot never re-prompts unless that NVS is erased. (A full flash erase also clears the library's zone NVS → device restarts at zone 0.)
 
+## Threat model / accepted trade-offs
+
+| Threat | Detail | Accepted trade-off |
+|---|---|---|
+| **MQTT in cleartext** | Traffic travels over TCP port 1883 with no TLS. Any host on the same LAN can sniff or inject frames. | Acceptable on a private home LAN. The MQTT broker (Mosquitto) requires username/password auth, preventing trivial unauthenticated injection. TLS (`WiFiClientSecure` + cert) is a future backlog item. |
+| **Secrets compiled into the binary** | `WIFI_SSID`, `WIFI_PASSWORD`, `MQTT_HOST`, `MQTT_USER`, `MQTT_PASSWORD` are `#define`d in `src/secrets.h`, which is compiled into the binary. The plaintext credentials can be extracted via `esptool read_flash`. | Acceptable on hardware physically controlled by the flat. Flash encryption is a future backlog item. |
+| **Single shared fleet credential** | All ESP32 devices use the same MQTT username/password (`lumi-fleet`). A compromised credential affects the whole strip fleet simultaneously. Rotation requires re-flashing every device (compile-time constant). | Accepted. Per-device credentials would require per-device builds, defeating the single-binary principle. Mitigated by: (a) using a dedicated `lumi-fleet` broker user distinct from the bridge's own credential, enabling independent rotation; (b) limiting broker ACLs to the `lumi/` topic namespace only. See also `src/secrets.h.example`. |
+| **LAN co-location** | Other devices on the same flat LAN (residents' phones, IoT devices) can reach the broker on port 1883. | Accepted. Mosquitto mandatory auth blocks unauthenticated access. A Mosquitto ACL limits `lumi-fleet` to `lumi/#` only. Physical network segregation (VLAN) is out of scope for a home flat. |
+
+**Backlog (not planned):** `WiFiClientSecure` + broker certificate, ESP32 flash encryption, OTA-safe credential rotation.
+
+## Broker outage behaviour
+
+When the MQTT broker is unreachable, `lumi.loop()` calls `_reconnectMqtt()` (inside the library) approximately every 5 s. Each reconnection attempt blocks the cooperative loop for up to **~15 s** (TCP connect timeout). During this window:
+
+- The animation loop does not advance; the strip holds its last rendered frame.
+- No callbacks fire (no commands can arrive).
+- The device resumes normal operation immediately once the broker is reachable again.
+
+This "stall" is a known limitation of the current synchronous reconnect implementation inside `LumiProtocol`. A fix (e.g. `_mqtt.setSocketTimeout(1)` or a state-machine reconnect) will be delivered in a future library release and picked up via the next submodule bump.
+
 ## Build
 
 | Aspect | Choice |

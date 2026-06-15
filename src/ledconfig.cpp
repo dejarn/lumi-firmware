@@ -1,4 +1,6 @@
 #include "ledconfig.h"
+// ledconfig_rules.h is included transitively via ledconfig.h and provides
+// kSupportedPins, kMinLeds, kMaxLeds, isSupportedPin(), isValidConfig().
 
 #include <Arduino.h>
 #include <Preferences.h>
@@ -9,19 +11,6 @@ namespace {
 constexpr char kNamespace[] = "lumi-led";
 constexpr char kKeyNumLeds[] = "num_leds";
 constexpr char kKeyDataPin[] = "data_pin";
-
-// Supported GPIOs for the FastLED strip. MUST match the switch(dataPin)
-// cases the led module (step 02) implements.
-constexpr uint8_t kSupportedPins[] = {
-    2, 4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33};
-
-constexpr uint32_t kMinLeds = 1;
-constexpr uint32_t kMaxLeds = 1000;
-
-bool isValidConfig(const Config& cfg) {
-  return cfg.numLeds >= kMinLeds && cfg.numLeds <= kMaxLeds &&
-         isSupportedPin(cfg.dataPin);
-}
 
 // Reads a non-empty, trimmed line from Serial. Blocking; setup-stage only.
 String readLine() {
@@ -35,15 +24,6 @@ String readLine() {
 }
 
 }  // namespace
-
-bool isSupportedPin(uint8_t pin) {
-  for (uint8_t supported : kSupportedPins) {
-    if (supported == pin) {
-      return true;
-    }
-  }
-  return false;
-}
 
 bool load(Config& out) {
   Preferences prefs;

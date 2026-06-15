@@ -1,4 +1,6 @@
 #include "led.h"
+#include "led_math.h"
+#include "ledconfig_rules.h"
 
 #include <vector>
 #include <FastLED.h>
@@ -27,15 +29,6 @@ uint16_t frameIntervalMs = 33;     // ~30 fps default
 uint8_t  animSpeed       = 0;
 uint8_t  animIntensity   = 255;
 uint16_t phase           = 0;      // animation phase accumulator (0..65535)
-
-// Map protocol speed (0..255) → frame interval. Higher speed ⇒ shorter interval.
-// Range: ~90 ms (slow) down to a 10 ms floor (fast).
-uint16_t intervalForSpeed(uint8_t speed) {
-  const uint16_t kMax = 90;
-  const uint16_t kMin = 10;
-  uint16_t span = kMax - kMin;
-  return kMax - (uint16_t)((span * (uint16_t)speed) / 255);
-}
 
 // Current base color as a CHSV (hue scaled from protocol 0..65535 to 0..255).
 CHSV baseColor() {
@@ -98,8 +91,8 @@ void renderRainbow(uint8_t level) {
 // ── Public API ───────────────────────────────────────────────────────────────
 
 bool init(uint32_t numLeds, uint8_t dataPin) {
-  constexpr uint32_t kMaxLeds = 1000;  // defence-in-depth; must stay aligned with ledconfig
-  if (numLeds == 0 || numLeds > kMaxLeds) return false;
+  // Defence-in-depth: kMaxLeds is the authoritative constant from ledconfig_rules.h.
+  if (numLeds == 0 || numLeds > ledconfig::kMaxLeds) return false;
 
   buffer.assign(numLeds, CRGB::Black);   // single allocation
   count = numLeds;

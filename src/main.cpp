@@ -2,9 +2,9 @@
 //
 // Thin FastLED driver on top of the vendored LumiProtocol library. The library
 // owns Wi-Fi/MQTT/framing/CRC/ACK/STATE_REPORT/DISCOVERY/zone-NVS/reconnect.
-// This translation unit runs the boot sequence, derives the device name from
-// the MAC, retries lumi.begin() with capped backoff, registers the six command
-// callbacks (forwarding to the led module), and runs loop().
+// This translation unit derives the device name from the MAC, registers the
+// six command callbacks before lumi.begin(), retries lumi.begin() with capped
+// backoff, and runs loop().
 //
 // Invariants: never open an MQTT client, build/parse a frame, or emit an ACK
 // here; never touch the lumi/zone NVS namespace; no delay() in loop().
@@ -50,7 +50,18 @@ void setup() {
   Serial.print(F("[main] device name: "));
   Serial.println(deviceName);
 
-  // 4. Connect via the library with capped exponential backoff. begin() blocks
+  // 4. Register the six command callbacks before begin() so no command window is
+  //    missed: begin() connects + subscribes, and any retained cmd arriving
+  //    immediately after subscribe would otherwise be ACK'd with no effect.
+  //    Lambdas are capture-less → no heap allocation for std::function.
+  lumi.onSetPower      ([](bool on)                                  { led::setPower(on); });
+  lumi.onSetBrightness ([](uint8_t brightness)                       { led::setBrightness(brightness); });
+  lumi.onSetColor      ([](uint16_t h, uint8_t s, uint8_t b)         { led::setColor(h, s, b); });
+  lumi.onSetAnimation  ([](uint8_t id, uint8_t speed, uint8_t inten) { led::setAnimation(id, speed, inten); });
+  lumi.onStopAnimation ([]()                                         { led::stopAnimation(); });
+  lumi.onGetState      ([]() -> LumiState                            { return led::getState(); });
+
+  // 5. Connect via the library with capped exponential backoff. begin() blocks
   //    up to ~30 s for Wi-Fi and returns false on timeout; the library's own
   //    5 s reconnect loop does not cover this pre-begin() case, so retry here.
   uint32_t backoffMs = 1000;                 // start at 1 s
@@ -62,8 +73,6 @@ void setup() {
     Serial.println(F(" s"));
     uint32_t start = millis();
     while (millis() - start < backoffMs) {
-      // non-blocking wait; nothing to service before begin() succeeds.
-      // yield() keeps the task watchdog fed if it is ever enabled on loopTask.
       yield();
     }
     if (backoffMs < backoffCeilMs) {
@@ -72,15 +81,6 @@ void setup() {
     }
   }
   Serial.println(F("[main] connected"));
-
-  // 5. Register the six command callbacks as capture-less lambdas forwarding to
-  //    the led module. Capturing nothing keeps each std::function heap-free.
-  lumi.onSetPower      ([](bool on)                                  { led::setPower(on); });
-  lumi.onSetBrightness ([](uint8_t brightness)                       { led::setBrightness(brightness); });
-  lumi.onSetColor      ([](uint16_t h, uint8_t s, uint8_t b)         { led::setColor(h, s, b); });
-  lumi.onSetAnimation  ([](uint8_t id, uint8_t speed, uint8_t inten) { led::setAnimation(id, speed, inten); });
-  lumi.onStopAnimation ([]()                                         { led::stopAnimation(); });
-  lumi.onGetState      ([]() -> LumiState                            { return led::getState(); });
 }
 
 void loop() {

@@ -57,8 +57,8 @@ There is **no** `mqtt` or `protocol` module — `LumiProtocol` replaces both. `l
 3. Load NUM_LEDS + DATA_PIN from NVS.
 4. `ledInit(numLeds, dataPin)` — allocate the CRGB buffer, register FastLED on the provisioned GPIO.
 5. Derive `deviceName` from the Wi-Fi MAC (e.g. `lumi-a3f1`).
-6. Connect: loop `lumi.begin(WIFI_SSID, WIFI_PASS, MQTT_HOST, deviceName, MQTT_PORT, MQTT_USER, MQTT_PASSWORD)` with backoff until it returns true (see Resilience).
-7. Wire callbacks (`onSetPower`, `onSetBrightness`, `onSetColor`, `onSetAnimation`, `onStopAnimation`, `onGetState`) to `led`.
+6. Wire callbacks (`onSetPower`, `onSetBrightness`, `onSetColor`, `onSetAnimation`, `onStopAnimation`, `onGetState`) to `led` — **before** `begin()` so no command arriving immediately after subscribe is ACK'd without effect.
+7. Connect: loop `lumi.begin(WIFI_SSID, WIFI_PASS, MQTT_HOST, deviceName, MQTT_PORT, MQTT_USER, MQTT_PASSWORD)` with backoff until it returns true (see Resilience).
 
 ## Loop (`loop()`)
 
